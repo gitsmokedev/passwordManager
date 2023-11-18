@@ -6,6 +6,7 @@
 #include <vector>
 #include <cstdlib>
 #include <sys/stat.h>
+#include <map>
 
 using namespace std;
 
@@ -27,6 +28,7 @@ int displayMenu(const string [], int, int);
 string generatePassword(int length);
 vector<PasswordList> loadPasswords();
 
+
 int main() {
 
     const char* dir = "./passwords.txt";
@@ -46,6 +48,8 @@ int main() {
         "Exit Program"
     };
 
+
+
     displayTitle(); //   Display Title to the user.
 
     while (userChoice != 4)
@@ -58,10 +62,10 @@ int main() {
         case 1: {
             do {
                     int passwordLength;
-                    cout << "Enter the length of the password: ";
+                    std::cout << "Enter the length of the password: ";
                     cin >> passwordLength;
                     string newPassword = generatePassword(passwordLength);
-                    cout << "\nGenerated password: " << newPassword << "\n" << endl;
+                    std::cout << "\nGenerated password: " << newPassword << "\n" << endl;
             } while (userContinue());
                 break;
         }
@@ -69,13 +73,14 @@ int main() {
         case 2: {
             do {
                 if (!savedPasswords.empty()) {
-                        cout << "Saved Passwords:\n";
+                        std::cout << "Saved Passwords:\n";
                         for (size_t i = 0; i < savedPasswords.size(); i++) {
-                            cout << i + 1 << ". Website/Application: " << savedPasswords[i].websiteOrApp << endl;
-                            cout << "Username/Password: " << savedPasswords[i].userName << " - " << savedPasswords[i].password << endl;
+                            std::cout << i + 1 << ". Website/Application: " << savedPasswords[i].websiteOrApp << endl;
+                            std::cout << "Username: " << savedPasswords[i].userName << endl; 
+                            std::cout << "Password: " << savedPasswords[i].password << endl;
                         }
                     } else {
-                        cout << "No saved passwords found.\n";
+                        std::cout << "No saved passwords found.\n";
                     }
             } while (userContinue());
                 break;      
@@ -84,18 +89,30 @@ int main() {
         case 3: {
             do {
                 PasswordList newPasswordEntry;
-                cout << "Enter the name of the website or application: ";
-                cin >> newPasswordEntry.websiteOrApp;
-                cout << "Enter the username: ";
-                cin >> newPasswordEntry.userName;
-                int passwordLength;
-                cout << "Enter the length of the password: ";
-                cin >> passwordLength;
-                newPasswordEntry.password = generatePassword(passwordLength);
+                std::cout << "Enter the name of the website or application: ";
+                cin.ignore();
+                getline(cin, newPasswordEntry.websiteOrApp);
+                std::cout << "Enter the username: ";
+                cin.ignore();
+                getline(cin, newPasswordEntry.userName);
 
+                std::cout << "Would you like to generate a password? Enter (Y/N): ";
+                char generateChoice;
+                cin >> generateChoice;
+                if (toupper(generateChoice) == 'N'){
+                    std::cout << "Enter the password you would like to save: ";
+                    cin.ignore();
+                    getline(cin, newPasswordEntry.password);
+                }
+                else {
+                    int passwordLength;
+                    std::cout << "Enter the length of the password: ";
+                    cin >> passwordLength;
+                    newPasswordEntry.password = generatePassword(passwordLength);
+                }
                 savedPasswords.push_back(newPasswordEntry);
                 savePasswords(savedPasswords);
-                cout << "Generated and stored password for " << newPasswordEntry.websiteOrApp << endl;
+                std::cout << "Generated and stored password for " << newPasswordEntry.websiteOrApp << endl;
             } while (userContinue());
                 break;
         }
@@ -117,17 +134,17 @@ int main() {
 
 //  Functions for the program.
 void displayTitle() {
-    cout << "Welcome to Ayo's Password Manager." << endl;
-    cout << "My main functionality is to simplify your password usage and storage" << endl;
+    std::cout << "Welcome to Ayo's Password Manager." << endl;
+    std::cout << "\nMy main functionality is to simplify your password usage and storage" << endl;
 }
 
 void raiseError() {
-    cout << "You have made an invalid selection." << endl;
+    std::cout << "You have made an invalid selection." << endl;
 }
 
 bool userContinue() {
     char userResponse;
-    cout << "Would you like to continue? Enter 'Y' or 'N': ";
+    std::cout << "Would you like to continue? Enter 'Y' or 'N': ";
     cin >> userResponse;
     while (toupper(userResponse) != 'Y' && toupper(userResponse) != 'N') {
         raiseError();
@@ -137,7 +154,7 @@ bool userContinue() {
 }
 
 int displayMenu(const string a[], int size, int selection = 0) {
-    cout << "   __  __                  \n"
+    std::cout << "   __  __                  \n"
             "  |  \\/  | ___ _ __  _   _ \n"
             "  | |\\/| |/ _ | '_ \\| | | |\n"
             "  | |  | |  __| | | | |_| |\n"
@@ -145,9 +162,9 @@ int displayMenu(const string a[], int size, int selection = 0) {
             "\n";
 
     for (int i = 0; i < size; i++) {
-        cout << i + 1 << ". " << a[i] << endl;
+        std::cout << i + 1 << ". " << a[i] << endl;
     }
-    cout << "Select an option: ";
+    std::cout << "Select an option: ";
     cin >> selection;
     while (selection <= 0 || selection > size) {
         raiseError();
@@ -177,11 +194,12 @@ void savePasswords(const vector<PasswordList>& passwords) {
     if (file.is_open()) {
         for (const auto& password : passwords) {
             file << "Website/Application: " << password.websiteOrApp << '\n'
-                 << "Username/Password: " << password.userName << " - " << password.password << '\n'
+                 << "Username: " << password.userName << '\n'
+                 << "Password: " << password.password << '\n'
                  << "--------------------------\n";  // Add the delimiter
         }
         //file.close();
-        cout << "Passwords saved to 'passwords.txt'." << endl;
+        std::cout << "Passwords saved to 'passwords.txt'." << endl;
     } else {
         cerr << "Error: Unable to open 'passwords.txt' for saving passwords." << endl;
     }
@@ -193,37 +211,64 @@ vector<PasswordList> loadPasswords() {
     if (file.is_open()) {
         PasswordList entry;
         string line;
-        bool readingEntry = false;
         while (getline(file, line)) {
-            if (line == "--------------------------") {
-                if (readingEntry) {
-                    passwords.push_back(entry);
-                    entry.websiteOrApp = "";  // Clear the entry for the next password
-                    entry.userName = "";
-                    entry.password = "";
-                    readingEntry = false;
-                }
-            } else if (line.find("Website/Application: ") == 0) {
+            if (line.find("Website/Application: ") != string::npos) {
                 entry.websiteOrApp = line.substr(21);
-                readingEntry = true;
-            } else if (line.find("Username/Password: ") == 0) {
-                string usernamePassword = line.substr(19);
-                size_t pos = usernamePassword.find(" - ");
-                if (pos != string::npos) {
-                    entry.userName = usernamePassword.substr(0, pos);
-                    entry.password = usernamePassword.substr(pos + 3);
-                }
+            } else if (line.find("Username: ") != string::npos) {
+                entry.userName = line.substr(10);
+            } else if (line.find("Password: ") != string::npos) {
+                entry.password = line.substr(10);
+                passwords.push_back(entry);
+                entry.websiteOrApp = "";  // Clear the entry for the next password
+                entry.userName = "";
+                entry.password = "";
             }
         }
         //file.close();
     } else {
-        cerr << "Error: Unable to open 'passwords.txt' for loading passwords." << endl;
+        cout << "Error: Unable to open 'passwords.txt' for loading passwords." << endl;
     }
     return passwords;
 }
 
+
+// vector<PasswordList> loadPasswords() {
+//     vector<PasswordList> passwords;
+//     ifstream file("passwords.txt");
+//     if (file.is_open()) {
+//         PasswordList entry;
+//         string line;
+//         bool readingEntry = false;
+//         while (getline(file, line)) {
+//             if (line == "--------------------------") {
+//                 if (readingEntry) {
+//                     passwords.push_back(entry);
+//                     entry.websiteOrApp = "";  // Clear the entry for the next password
+//                     entry.userName = "";
+//                     entry.password = "";
+//                     readingEntry = false;
+//                 }
+//             } else if (line.find("Website/Application: ") == 0) {
+//                 entry.websiteOrApp = line.substr(21);
+//                 readingEntry = true;
+//             } else if (line.find("Username/Password: ") == 0) {
+//                 string usernamePassword = line.substr(19);
+//                 size_t pos = usernamePassword.find(" - ");
+//                 if (pos != string::npos) {
+//                     entry.userName = usernamePassword.substr(0, pos);
+//                     entry.password = usernamePassword.substr(pos + 3);
+//                 }
+//             }
+//         }
+//         //file.close();
+//     } else {
+//         cerr << "Error: Unable to open 'passwords.txt' for loading passwords." << endl;
+//     }
+//     return passwords;
+// }
+
 int programClose() {
-    cout << "Exiting Password Manager." << endl;
+    std::cout << "Exiting Password Manager." << endl;
     return 0;
 }
 
