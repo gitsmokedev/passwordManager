@@ -73,9 +73,12 @@ int main() {
         case 2: {
             do {
                 if (!savedPasswords.empty()) {
-                    std::cout << "Saved Passwords:\n";
+
+                    std::cout << "\n+-+-+-+-+-+ +-+-+-+-+-+-+-+-+-+\n"
+                                 "|S|a|v|e|d| |P|a|s|s|w|o|r|d|s|\n"
+                                 "+-+-+-+-+-+ +-+-+-+-+-+-+-+-+-+\n";
                     for (size_t i = 0; i < savedPasswords.size(); i++) {
-                        std::cout << i + 1 << ". Website/Application: " << savedPasswords[i].websiteOrApp << endl;
+                        std::cout <<"\n" << i + 1 << ". Website/Application: " << savedPasswords[i].websiteOrApp << endl;
                         std::cout << "Username: " << savedPasswords[i].userName << endl;
                         std::cout << "Password: " << savedPasswords[i].password << endl;
                     }
