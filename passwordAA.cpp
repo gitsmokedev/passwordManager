@@ -6,7 +6,6 @@
 #include <vector>
 #include <cstdlib>
 #include <sys/stat.h>
-#include <map>
 
 using namespace std;
 
