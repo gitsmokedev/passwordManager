@@ -161,7 +161,10 @@ int main() {
 
 //  Functions for the program.
 void displayTitle() {
-    std::cout << "Welcome to Ayo's Password Manager." << endl;
+    std::cout << "\n+-+-+-+-+-+ +-+-+-+-+-+-+-+-+ +-+-+-+-+-+-+-+\n"
+                 "|A|y|o|'|s| |P|a|s|s|w|o|r|d| |M|a|n|a|g|e|r|\n"
+                 "+-+-+-+-+-+ +-+-+-+-+-+-+-+-+ +-+-+-+-+-+-+-+\n";
+
     std::cout << "\nMy main functionality is to simplify your password usage and storage" << endl;
 }
 
