@@ -27,6 +27,7 @@ int programClose();
 int displayMenu(const string [], int, int);
 string generatePassword(int length);
 vector<PasswordList> loadPasswords();
+vector<PasswordList> searchPasswords();
 
 
 int main() {
@@ -73,18 +74,43 @@ int main() {
         case 2: {
             do {
                 if (!savedPasswords.empty()) {
-                        std::cout << "Saved Passwords:\n";
-                        for (size_t i = 0; i < savedPasswords.size(); i++) {
-                            std::cout << i + 1 << ". Website/Application: " << savedPasswords[i].websiteOrApp << endl;
-                            std::cout << "Username: " << savedPasswords[i].userName << endl; 
-                            std::cout << "Password: " << savedPasswords[i].password << endl;
+                    std::cout << "Saved Passwords:\n";
+                    for (size_t i = 0; i < savedPasswords.size(); i++) {
+                        std::cout << i + 1 << ". Website/Application: " << savedPasswords[i].websiteOrApp << endl;
+                        std::cout << "Username: " << savedPasswords[i].userName << endl;
+                        std::cout << "Password: " << savedPasswords[i].password << endl;
+                    }
+                } else {
+                    std::cout << "No saved passwords found.\n";
+                }
+
+                char searchOrNot;
+                cout << "Would you like to search for a password? Enter Y/N: ";
+                cin >> searchOrNot;
+
+                while (toupper(searchOrNot) != 'Y' && toupper(searchOrNot) != 'N') {
+                    raiseError();
+                    cin >> searchOrNot;
+                }
+
+                if (toupper(searchOrNot) == 'Y') {
+                    vector<PasswordList> searchResults = searchPasswords();
+
+                    if (!searchResults.empty()) {
+                        std::cout << "Search Results:\n";
+                        for (size_t i = 0; i < searchResults.size(); i++) {
+                            std::cout << i + 1 << ". Website/Application: " << searchResults[i].websiteOrApp << endl;
+                            std::cout << "Username: " << searchResults[i].userName << endl;
+                            std::cout << "Password: " << searchResults[i].password << endl;
                         }
                     } else {
-                        std::cout << "No saved passwords found.\n";
+                        std::cout << "No matching passwords found.\n";
                     }
+                }
             } while (userContinue());
-                break;      
+            break;
         }
+
 
         case 3: {
             do {
@@ -93,7 +119,6 @@ int main() {
                 cin.ignore();
                 getline(cin, newPasswordEntry.websiteOrApp);
                 std::cout << "Enter the username: ";
-                cin.ignore();
                 getline(cin, newPasswordEntry.userName);
 
                 std::cout << "Would you like to generate a password? Enter (Y/N): ";
@@ -118,6 +143,8 @@ int main() {
         }
 
         case 4: {
+            ifstream file("passwords.txt");
+            file.close();
             programClose();
             break;
         } 
@@ -189,6 +216,7 @@ string generatePassword(int length) {
     return password;
 }
 
+//  Save Function // 
 void savePasswords(const vector<PasswordList>& passwords) {
     ofstream file("passwords.txt");
     if (file.is_open()) {
@@ -205,12 +233,45 @@ void savePasswords(const vector<PasswordList>& passwords) {
     }
 }
 
+//  Search Function  //
+vector<PasswordList> searchPasswords() {
+    ifstream file("passwords.txt");
+    string line;
+    string webAppName;
+    vector<PasswordList> foundPasswords;
+
+    cout << "What is the website name you would like to find? ";
+    cin >> webAppName;
+    bool found = false;
+
+    while (getline(file, line)) {
+        if (line.find("Website/Application: " + webAppName) != string::npos) {
+            PasswordList entry;
+            entry.websiteOrApp = line.substr(21); // Extract website/app name
+            getline(file, line); // Read the next line (Username)
+            entry.userName = line.substr(10); // Extract username
+            getline(file, line); // Read the next line (Password)
+            entry.password = line.substr(10); // Extract password
+            foundPasswords.push_back(entry);
+            found = true;
+        }
+    }
+
+    if (!found) {
+        cout << "Your search was not found!" << endl;
+    }
+
+    return foundPasswords;
+}
+
+//  Display Passwords  //
 vector<PasswordList> loadPasswords() {
-    vector<PasswordList> passwords;
+    vector<PasswordList> passwords; //  Create vector to return after password is loaded.
     ifstream file("passwords.txt");
     if (file.is_open()) {
-        PasswordList entry;
-        string line;
+        PasswordList entry; //  Create a temporary structure to store read values.
+        string line;    //  Store each line in the passwords in string.
+
         while (getline(file, line)) {
             if (line.find("Website/Application: ") != string::npos) {
                 entry.websiteOrApp = line.substr(21);
@@ -218,7 +279,9 @@ vector<PasswordList> loadPasswords() {
                 entry.userName = line.substr(10);
             } else if (line.find("Password: ") != string::npos) {
                 entry.password = line.substr(10);
-                passwords.push_back(entry);
+
+                passwords.push_back(entry); //  Store passwords in the vector to be returned
+
                 entry.websiteOrApp = "";  // Clear the entry for the next password
                 entry.userName = "";
                 entry.password = "";
@@ -226,47 +289,13 @@ vector<PasswordList> loadPasswords() {
         }
         //file.close();
     } else {
+        //  Throws error when unable to access file.
         cout << "Error: Unable to open 'passwords.txt' for loading passwords." << endl;
     }
     return passwords;
 }
 
-
-// vector<PasswordList> loadPasswords() {
-//     vector<PasswordList> passwords;
-//     ifstream file("passwords.txt");
-//     if (file.is_open()) {
-//         PasswordList entry;
-//         string line;
-//         bool readingEntry = false;
-//         while (getline(file, line)) {
-//             if (line == "--------------------------") {
-//                 if (readingEntry) {
-//                     passwords.push_back(entry);
-//                     entry.websiteOrApp = "";  // Clear the entry for the next password
-//                     entry.userName = "";
-//                     entry.password = "";
-//                     readingEntry = false;
-//                 }
-//             } else if (line.find("Website/Application: ") == 0) {
-//                 entry.websiteOrApp = line.substr(21);
-//                 readingEntry = true;
-//             } else if (line.find("Username/Password: ") == 0) {
-//                 string usernamePassword = line.substr(19);
-//                 size_t pos = usernamePassword.find(" - ");
-//                 if (pos != string::npos) {
-//                     entry.userName = usernamePassword.substr(0, pos);
-//                     entry.password = usernamePassword.substr(pos + 3);
-//                 }
-//             }
-//         }
-//         //file.close();
-//     } else {
-//         cerr << "Error: Unable to open 'passwords.txt' for loading passwords." << endl;
-//     }
-//     return passwords;
-// }
-
+//  Exit Message  //
 int programClose() {
     std::cout << "Exiting Password Manager." << endl;
     return 0;
