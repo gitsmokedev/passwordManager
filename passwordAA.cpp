@@ -37,7 +37,7 @@ int main() {
 
     if (stat(dir, &sb) != 0) {
         ofstream file("passwords.txt");
-        //cout << "Path is valid";
+        //std::cout << "Path is valid";
     } 
     
     int userChoice = 0;
@@ -56,14 +56,17 @@ int main() {
     {
        vector<PasswordList> savedPasswords = loadPasswords();
        userChoice = displayMenu(MENU, sizeof(MENU)/sizeof(MENU[0]), userChoice);
-
+       if (!isdigit(userChoice)) {
+        raiseError();
+        std::cin >> userChoice;
+       }
        switch (userChoice)
        {
         case 1: {
             do {
                     int passwordLength;
                     std::cout << "Enter the length of the password: ";
-                    cin >> passwordLength;
+                    std::cin >> passwordLength;
                     string newPassword = generatePassword(passwordLength);
                     std::cout << "\nGenerated password: " << newPassword << "\n" << endl;
             } while (userContinue());
@@ -87,21 +90,28 @@ int main() {
                 }
 
                 char searchOrNot;
-                cout << "Would you like to search for a password? Enter Y/N: ";
-                cin >> searchOrNot;
+                std::cout << "Would you like to search for a password? Enter Y/N: ";
+                std::cin >> searchOrNot;
 
                 while (toupper(searchOrNot) != 'Y' && toupper(searchOrNot) != 'N') {
                     raiseError();
-                    cin >> searchOrNot;
+                    std::cin >> searchOrNot;
                 }
 
                 if (toupper(searchOrNot) == 'Y') {
                     vector<PasswordList> searchResults = searchPasswords();
 
                     if (!searchResults.empty()) {
-                        std::cout << "Search Results:\n";
+                        std::cout 
+                            << "                           _         , __                  _         \n"
+                            << "  ()                      | |       /|/  \\                | |         \n"
+                            << "  /\\  _   __,   ,_    __  | |        |___/  _   ,         | |_|_  ,  \n"
+                            << " /  \\|/  /  |  /  |  /    |/ \\       | \\   |/  / \\_|   |  |/  |  / \\_\n"
+                            << "/(__/|__/\\_/|_/   |_/\\___/|   |_/    |  \\_/|__/ \\/  \\_/|_/|__/|_/ \\/ \n";
+
+
                         for (size_t i = 0; i < searchResults.size(); i++) {
-                            std::cout << i + 1 << ". Website/Application: " << searchResults[i].websiteOrApp << endl;
+                            std::cout << "\n\n" << i + 1 << ". Website/Application: " << searchResults[i].websiteOrApp << endl;
                             std::cout << "Username: " << searchResults[i].userName << endl;
                             std::cout << "Password: " << searchResults[i].password << endl;
                         }
@@ -118,23 +128,23 @@ int main() {
             do {
                 PasswordList newPasswordEntry;
                 std::cout << "Enter the name of the website or application: ";
-                cin.ignore();
-                getline(cin, newPasswordEntry.websiteOrApp);
+                std::cin.ignore();
+                getline(std::cin, newPasswordEntry.websiteOrApp);
                 std::cout << "Enter the username: ";
-                getline(cin, newPasswordEntry.userName);
+                getline(std::cin, newPasswordEntry.userName);
 
                 std::cout << "Would you like to generate a password? Enter (Y/N): ";
                 char generateChoice;
-                cin >> generateChoice;
+                std::cin >> generateChoice;
                 if (toupper(generateChoice) == 'N'){
                     std::cout << "Enter the password you would like to save: ";
-                    cin.ignore();
-                    getline(cin, newPasswordEntry.password);
+                    std::cin.ignore();
+                    getline(std::cin, newPasswordEntry.password);
                 }
                 else {
                     int passwordLength;
                     std::cout << "Enter the length of the password: ";
-                    cin >> passwordLength;
+                    std::cin >> passwordLength;
                     newPasswordEntry.password = generatePassword(passwordLength);
                 }
                 savedPasswords.push_back(newPasswordEntry);
@@ -171,16 +181,17 @@ void displayTitle() {
 }
 
 void raiseError() {
-    std::cout << "You have made an invalid selection." << endl;
+    std::cout << "\nYou have made an invalid selection." << endl;
+    std::cout << "Try again! Enter a valid option: ";
 }
 
 bool userContinue() {
     char userResponse;
     std::cout << "Would you like to continue? Enter 'Y' or 'N': ";
-    cin >> userResponse;
+    std::cin >> userResponse;
     while (toupper(userResponse) != 'Y' && toupper(userResponse) != 'N') {
         raiseError();
-        cin >> userResponse;
+        std::cin >> userResponse;
     }
     return toupper(userResponse) == 'Y';
 }
@@ -197,10 +208,10 @@ int displayMenu(const string a[], int size, int selection = 0) {
         std::cout << i + 1 << ". " << a[i] << endl;
     }
     std::cout << "Select an option: ";
-    cin >> selection;
+    std::cin >> selection;
     while (selection <= 0 || selection > size) {
         raiseError();
-        cin >> selection;
+        std::cin >> selection;
     }
     return selection;
 }
@@ -245,8 +256,8 @@ vector<PasswordList> searchPasswords() {
     string webAppName;
     vector<PasswordList> foundPasswords;
 
-    cout << "What is the website name you would like to find? ";
-    cin >> webAppName;
+    std::cout << "What is the website name you would like to find? ";
+    std::cin >> webAppName;
     bool found = false;
 
     while (getline(file, line)) {
@@ -263,7 +274,7 @@ vector<PasswordList> searchPasswords() {
     }
 
     if (!found) {
-        cout << "Your search was not found!" << endl;
+        std::cout << "Your search was not found!" << endl;
     }
 
     return foundPasswords;
@@ -295,7 +306,7 @@ vector<PasswordList> loadPasswords() {
         //file.close();
     } else {
         //  Throws error when unable to access file.
-        cout << "Error: Unable to open 'passwords.txt' for loading passwords." << endl;
+        std::cout << "Error: Unable to open 'passwords.txt' for loading passwords." << endl;
     }
     return passwords;
 }
