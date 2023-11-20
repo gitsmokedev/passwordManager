@@ -6,6 +6,7 @@
 #include <vector>
 #include <cstdlib>
 #include <sys/stat.h>
+#include <openssl/evp.h>
 
 using namespace std;
 
@@ -56,10 +57,10 @@ int main() {
     {
        vector<PasswordList> savedPasswords = loadPasswords();
        userChoice = displayMenu(MENU, sizeof(MENU)/sizeof(MENU[0]), userChoice);
-       if (!isdigit(userChoice)) {
-        raiseError();
-        std::cin >> userChoice;
-       }
+       //while (!isdigit(userChoice)) {
+        //raiseError();
+        //std::cin >> userChoice;
+       //}
        switch (userChoice)
        {
         case 1: {
