@@ -5,8 +5,6 @@
 #include <ctime>
 #include <vector>
 #include <cstdlib>
-#include <sys/stat.h>
-#include <openssl/evp.h>
 
 using namespace std;
 
@@ -38,7 +36,7 @@ int main() {
 
     if (stat(dir, &sb) != 0) {
         ofstream file("passwords.txt");
-        //std::cout << "Path is valid";
+        //Path is valid;
     } 
     
     int userChoice = 0;
@@ -57,10 +55,7 @@ int main() {
     {
        vector<PasswordList> savedPasswords = loadPasswords();
        userChoice = displayMenu(MENU, sizeof(MENU)/sizeof(MENU[0]), userChoice);
-       //while (!isdigit(userChoice)) {
-        //raiseError();
-        //std::cin >> userChoice;
-       //}
+       
        switch (userChoice)
        {
         case 1: {
@@ -304,7 +299,6 @@ vector<PasswordList> loadPasswords() {
                 entry.password = "";
             }
         }
-        //file.close();
     } else {
         //  Throws error when unable to access file.
         std::cout << "Error: Unable to open 'passwords.txt' for loading passwords." << endl;
